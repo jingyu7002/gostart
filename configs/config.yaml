@@ -1,0 +1,15 @@
+server:
+  host: "127.0.0.1"
+  port: "8623"
+mysql:
+  username: "root"
+  password: "123456"
+  host: "127.0.0.1"
+  port: "3306"
+  database: "url"
+redis:
+  username: ""
+  password: ""
+  host: "127.0.0.1"
+  port: "8521"
+  database: 0
