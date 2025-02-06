@@ -1,15 +1,13 @@
-package settings
+package config
 
 import (
 	"fmt"
-
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"sync"
 )
 
-// Conf 全局变量，用来保存程序的所有配置信息
-var Conf = new(AppConfig)
-
+// AppConfig 结构体，用于保存程序的所有配置信息
 type AppConfig struct {
 	Name         string `mapstructure:"name"`
 	Mode         string `mapstructure:"mode"`
@@ -46,28 +44,43 @@ type RedisConfig struct {
 	PoolSize int    `mapstructure:"pool_size"`
 }
 
-func Init() (err error) {
+var (
+	configOnce sync.Once
+	conf       *AppConfig
+)
 
-	viper.SetConfigFile("config.yaml")
-	//viper.SetConfigName("config") // 指定配置文件名称（不需要带后缀）
-	//viper.SetConfigType("yaml")   // 指定配置文件类型(专用于从远程获取配置信息时指定配置文件类型的)
-	viper.AddConfigPath(".")   // 指定查找配置文件的路径（这里使用相对路径）
-	err = viper.ReadInConfig() // 读取配置信息
-	if err != nil {
-		// 读取配置信息失败
-		fmt.Printf("viper.ReadInConfig() failed, err:%v\n", err)
-		return
-	}
-	// 把读取到的配置信息反序列化到 Conf 变量中
-	if err := viper.Unmarshal(Conf); err != nil {
-		fmt.Printf("viper.Unmarshal failed, err:%v\n", err)
-	}
-	viper.WatchConfig()
-	viper.OnConfigChange(func(in fsnotify.Event) {
-		fmt.Println("配置文件修改了...")
-		if err := viper.Unmarshal(Conf); err != nil {
-			fmt.Printf("viper.Unmarshal failed, err:%v\n", err)
+func GetConfig() *AppConfig {
+
+	// 使用 sync.Once 保证配置只加载一次
+	configOnce.Do(func() {
+		conf = new(AppConfig) // 这里直接修改全局变量 conf
+		configFileName := "./configs/config.yaml"
+		// 设置配置文件路径和文件名
+		viper.SetConfigFile(configFileName)
+		// 读取配置文件
+		err := viper.ReadInConfig()
+		if err != nil {
+			// 读取配置文件失败
+			fmt.Printf("viper.ReadInConfig() failed, err:%v\n", err)
+			return
 		}
+
+		// 将配置文件内容反序列化到 conf 对象中
+		if err := viper.Unmarshal(conf); err != nil {
+			fmt.Printf("viper.Unmarshal failed, err:%v\n", err)
+			return
+		}
+
+		// 配置文件变化监听
+		viper.WatchConfig()
+		viper.OnConfigChange(func(in fsnotify.Event) {
+			fmt.Println("配置文件修改了...")
+			if err := viper.Unmarshal(conf); err != nil {
+				fmt.Printf("viper.Unmarshal failed, err:%v\n", err)
+			}
+		})
 	})
-	return
+
+	// 返回配置对象
+	return conf
 }

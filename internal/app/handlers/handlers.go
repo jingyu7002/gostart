@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"net/http"
-	"web_app/logger"
-	"web_app/settings"
+	"web-app/internal/config"
+	"web-app/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +16,7 @@ func Setup(mode string) *gin.Engine {
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 
 	r.GET("/version", func(c *gin.Context) {
-		c.String(http.StatusOK, settings.Conf.Version)
+		c.String(http.StatusOK, config.GetConfig().Version)
 	})
 	return r
 }

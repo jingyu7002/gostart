@@ -1,6 +1,10 @@
 package logger
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/natefinch/lumberjack"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -8,16 +12,12 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
-	"web_app/settings"
-
-	"github.com/gin-gonic/gin"
-	"github.com/natefinch/lumberjack"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"web-app/internal/config"
 )
 
 // Init 初始化Logger
-func Init(cfg *settings.LogConfig) (err error) {
+func Init() (err error) {
+	cfg := config.GetConfig().LogConfig
 	writeSyncer := getLogWriter(
 		cfg.Filename,
 		cfg.MaxSize,

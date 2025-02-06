@@ -2,7 +2,7 @@ package redis
 
 import (
 	"fmt"
-	"web_app/settings"
+	"web-app/internal/config"
 
 	"github.com/go-redis/redis"
 )
@@ -11,7 +11,8 @@ import (
 var rdb *redis.Client
 
 // Init 初始化连接
-func Init(cfg *settings.RedisConfig) (err error) {
+func Init() (err error) {
+	cfg := config.GetConfig().RedisConfig
 	rdb = redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d",
 			cfg.Host,
