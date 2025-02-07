@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"web-app/pkg/snowflake"
+
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -40,6 +42,10 @@ func main() {
 	// 4. 初始化Redis连接
 	if err := redis.Init(); err != nil {
 		fmt.Printf("init redis failed, err:%v\n", err)
+		return
+	}
+	if err := snowflake.Init(config.GetConfig().StartTime, config.GetConfig().MachineID); err != nil {
+		fmt.Printf("init snowflake failed, err:%v\n", err)
 		return
 	}
 	defer redis.Close()
